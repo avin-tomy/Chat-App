@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { formatClockTime } from "../utils/format";
-import { SendIcon, LogoMark, LockIcon } from "./icons";
+import { SendIcon, LogoMark, LockIcon, BackIcon } from "./icons";
 import Avatar from "./Avatar";
 
-export default function ChatWindow({ conversation, messages, currentUserId, onSend, isOtherUserOnline }) {
+export default function ChatWindow({ conversation, messages, currentUserId, onSend, isOtherUserOnline, onBack }) {
   const [text, setText] = useState("");
   const bottomRef = useRef(null);
 
@@ -34,6 +34,9 @@ export default function ChatWindow({ conversation, messages, currentUserId, onSe
   return (
     <main className="chat-window">
       <header className="chat-window-header">
+        <button className="back-button" onClick={onBack} aria-label="Back to conversations">
+          <BackIcon />
+        </button>
         <Avatar username={username} online={isOtherUserOnline} size="sm" />
         <span className="chat-header-meta">
           <span className="chat-header-name">{username}</span>

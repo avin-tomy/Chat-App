@@ -11,6 +11,7 @@ export default function Chat() {
   const [activeConversation, setActiveConversation] = useState(null);
   const [messages, setMessages] = useState([]);
   const [onlineUserIds, setOnlineUserIds] = useState(() => new Set());
+  const [showSidebarOnMobile, setShowSidebarOnMobile] = useState(true);
   const activeConversationRef = useRef(null);
 
   useEffect(() => {
@@ -71,6 +72,7 @@ export default function Chat() {
 
   async function selectConversation(conversation) {
     setActiveConversation(conversation);
+    setShowSidebarOnMobile(false);
     const res = await api.get(`/conversations/${conversation.id}/messages`);
     setMessages(res.data);
   }
@@ -102,7 +104,7 @@ export default function Chat() {
   }
 
   return (
-    <div className="chat-page">
+    <div className={"chat-page" + (showSidebarOnMobile ? "" : " mobile-chat-active")}>
       <Sidebar
         conversations={conversations}
         activeId={activeConversation?.id}
@@ -118,6 +120,7 @@ export default function Chat() {
         currentUserId={user.id}
         onSend={sendMessage}
         isOtherUserOnline={onlineUserIds.has(activeConversation?.otherUser?.id)}
+        onBack={() => setShowSidebarOnMobile(true)}
       />
     </div>
   );

@@ -615,6 +615,29 @@ input:focus {
   border-color: var(--paper-raised);
 }
 
+.back-button {
+  display: none;
+  background: transparent;
+  color: var(--muted);
+  width: 30px;
+  height: 30px;
+  border-radius: 6px;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-left: -0.35rem;
+}
+
+.back-button svg {
+  width: 19px;
+  height: 19px;
+}
+
+.back-button:hover {
+  background: var(--paper);
+  color: var(--ink);
+}
+
 .chat-header-meta {
   display: flex;
   flex-direction: column;
@@ -783,7 +806,20 @@ input:focus {
     padding: 2rem 1.5rem;
   }
 
+  /* Show one panel at a time: the conversation list, or the open chat. */
   .sidebar {
-    width: 260px;
+    width: 100%;
+  }
+
+  .chat-page.mobile-chat-active .sidebar {
+    display: none;
+  }
+
+  .chat-page:not(.mobile-chat-active) .chat-window {
+    display: none;
+  }
+
+  .back-button {
+    display: flex;
   }
 }
