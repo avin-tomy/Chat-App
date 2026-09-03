@@ -14,6 +14,7 @@ export default function Chat() {
   const [showSidebarOnMobile, setShowSidebarOnMobile] = useState(true);
   const activeConversationRef = useRef(null);
   const conversationsRef = useRef([]);
+  const messagesRequestIdRef = useRef(null);
 
   useEffect(() => {
     activeConversationRef.current = activeConversation;
@@ -90,8 +91,15 @@ export default function Chat() {
   async function selectConversation(conversation) {
     setActiveConversation(conversation);
     setShowSidebarOnMobile(false);
+    setMessages([]);
+
+    // Guard against an older request resolving after a newer one if the
+    // user switches conversations again before the fetch completes.
+    messagesRequestIdRef.current = conversation.id;
     const res = await api.get(`/conversations/${conversation.id}/messages`);
-    setMessages(res.data);
+    if (messagesRequestIdRef.current === conversation.id) {
+      setMessages(res.data);
+    }
   }
 
   async function startConversation(otherUser) {
