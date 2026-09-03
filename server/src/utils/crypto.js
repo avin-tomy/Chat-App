@@ -31,3 +31,15 @@ export function decryptText(encoded) {
   const plaintext = Buffer.concat([decipher.update(ciphertext), decipher.final()]);
   return plaintext.toString("utf8");
 }
+
+// A message encrypted under a key the server no longer has (e.g. an old
+// deployment with a different MESSAGE_ENCRYPTION_KEY) would otherwise throw
+// and take down the whole response it's part of. Isolate that failure to
+// just this one message instead.
+export function safeDecryptText(encoded) {
+  try {
+    return decryptText(encoded);
+  } catch {
+    return "[message unavailable]";
+  }
+}

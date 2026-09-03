@@ -4,7 +4,7 @@ import Conversation from "../models/Conversation.js";
 import Message from "../models/Message.js";
 import User from "../models/User.js";
 import { requireAuth } from "../middleware/auth.js";
-import { decryptText } from "../utils/crypto.js";
+import { safeDecryptText } from "../utils/crypto.js";
 
 const router = Router();
 
@@ -20,7 +20,7 @@ router.get("/", requireAuth, async (req, res) => {
       id: c._id,
       otherUser: other ? { id: other._id, username: other.username } : null,
       lastMessage: c.lastMessage
-        ? { text: decryptText(c.lastMessage.text), sender: c.lastMessage.sender, createdAt: c.lastMessage.createdAt }
+        ? { text: safeDecryptText(c.lastMessage.text), sender: c.lastMessage.sender, createdAt: c.lastMessage.createdAt }
         : null,
       lastMessageAt: c.lastMessageAt,
     };
@@ -59,7 +59,7 @@ router.post("/start", requireAuth, async (req, res) => {
     otherUser: { id: otherUser._id, username: otherUser.username },
     lastMessage: conversation.lastMessage
       ? {
-          text: decryptText(conversation.lastMessage.text),
+          text: safeDecryptText(conversation.lastMessage.text),
           sender: conversation.lastMessage.sender,
           createdAt: conversation.lastMessage.createdAt,
         }
@@ -89,7 +89,7 @@ router.get("/:id/messages", requireAuth, async (req, res) => {
     messages.map((m) => ({
       id: m._id,
       sender: m.sender,
-      text: decryptText(m.text),
+      text: safeDecryptText(m.text),
       createdAt: m.createdAt,
     }))
   );
