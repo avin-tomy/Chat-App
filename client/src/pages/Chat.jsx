@@ -13,10 +13,15 @@ export default function Chat() {
   const [onlineUserIds, setOnlineUserIds] = useState(() => new Set());
   const [showSidebarOnMobile, setShowSidebarOnMobile] = useState(true);
   const activeConversationRef = useRef(null);
+  const conversationsRef = useRef([]);
 
   useEffect(() => {
     activeConversationRef.current = activeConversation;
   }, [activeConversation]);
+
+  useEffect(() => {
+    conversationsRef.current = conversations;
+  }, [conversations]);
 
   useEffect(() => {
     api.get("/conversations").then((res) => setConversations(res.data));
@@ -27,17 +32,29 @@ export default function Chat() {
     if (!socket) return;
 
     function handleNewMessage(message) {
-      setConversations((prev) => {
-        const idx = prev.findIndex((c) => c.id === message.conversationId);
-        if (idx === -1) return prev;
-        const updated = {
-          ...prev[idx],
-          lastMessage: { text: message.text, sender: message.sender, createdAt: message.createdAt },
-          lastMessageAt: message.createdAt,
-        };
-        const rest = prev.filter((c) => c.id !== message.conversationId);
-        return [updated, ...rest];
-      });
+      const isKnownConversation = conversationsRef.current.some(
+        (c) => c.id === message.conversationId
+      );
+
+      if (!isKnownConversation) {
+        // Someone messaged us for the first time in a conversation we
+        // didn't initiate, so it isn't in our list yet — fetch the
+        // authoritative list instead of guessing at the missing fields
+        // (otherUser, etc.) client-side.
+        api.get("/conversations").then((res) => setConversations(res.data));
+      } else {
+        setConversations((prev) => {
+          const idx = prev.findIndex((c) => c.id === message.conversationId);
+          if (idx === -1) return prev;
+          const updated = {
+            ...prev[idx],
+            lastMessage: { text: message.text, sender: message.sender, createdAt: message.createdAt },
+            lastMessageAt: message.createdAt,
+          };
+          const rest = prev.filter((c) => c.id !== message.conversationId);
+          return [updated, ...rest];
+        });
+      }
 
       if (activeConversationRef.current?.id === message.conversationId) {
         setMessages((prev) => [...prev, message]);
@@ -83,7 +100,10 @@ export default function Chat() {
 
     setConversations((prev) => {
       if (prev.some((c) => c.id === conversation.id)) return prev;
-      return [{ ...conversation, lastMessage: null, lastMessageAt: new Date().toISOString() }, ...prev];
+      return [
+        { ...conversation, lastMessageAt: conversation.lastMessageAt || new Date().toISOString() },
+        ...prev,
+      ];
     });
 
     await selectConversation(conversation);

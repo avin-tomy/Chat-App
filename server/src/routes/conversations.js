@@ -46,7 +46,7 @@ router.post("/start", requireAuth, async (req, res) => {
 
   let conversation = await Conversation.findOne({
     participants: { $all: [req.userId, userId], $size: 2 },
-  });
+  }).populate("lastMessage");
 
   if (!conversation) {
     conversation = await Conversation.create({
@@ -57,6 +57,14 @@ router.post("/start", requireAuth, async (req, res) => {
   res.status(201).json({
     id: conversation._id,
     otherUser: { id: otherUser._id, username: otherUser.username },
+    lastMessage: conversation.lastMessage
+      ? {
+          text: decryptText(conversation.lastMessage.text),
+          sender: conversation.lastMessage.sender,
+          createdAt: conversation.lastMessage.createdAt,
+        }
+      : null,
+    lastMessageAt: conversation.lastMessageAt,
   });
 });
 

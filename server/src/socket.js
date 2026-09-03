@@ -105,6 +105,7 @@ export function initSocket(httpServer, clientUrl) {
 
         callback?.({ message: payload });
       } catch (err) {
+        console.error("message:send failed:", err);
         callback?.({ error: "Failed to send message" });
       }
     });
